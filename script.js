@@ -64,6 +64,11 @@ let transactionToDeleteId = null;
 let currentPage = 1;
 const transactionsPerPage = 8;
 
+
+/* =========================
+   NAVIGATION
+========================= */
+
 function showSection(sectionId) {
     pageSections.forEach((section) => {
         section.classList.toggle(
@@ -111,6 +116,11 @@ mobileNavLinks.forEach((link) => {
     });
 });
 
+
+/* =========================
+   LOCAL STORAGE
+========================= */
+
 function loadTransactions() {
     try {
         const savedData = localStorage.getItem(STORAGE_KEY);
@@ -130,14 +140,15 @@ function loadTransactions() {
         transactions = parsedData;
     } catch (error) {
         console.error(
-            "Unable to load transactions from LocalStorage:",
+            "Unable to load transactions:",
             error
         );
 
         transactions = [];
 
         showToast(
-            "Saved transaction data could not be loaded."
+            "Saved transaction data could not be loaded.",
+            "error"
         );
     }
 }
@@ -157,12 +168,18 @@ function saveTransactions() {
         );
 
         showToast(
-            "Unable to save transaction data."
+            "Unable to save transaction data.",
+            "error"
         );
 
         return false;
     }
 }
+
+
+/* =========================
+   MODAL
+========================= */
 
 function openTransactionModal(transaction = null) {
     if (!transactionModal) {
@@ -182,19 +199,15 @@ function openTransactionModal(transaction = null) {
         descriptionInput.value = transaction.description;
         notesInput.value = transaction.notes || "";
 
-        const typeRadio = document.querySelector(
+        const selectedType = document.querySelector(
             `input[name="transactionType"][value="${transaction.type}"]`
         );
 
-        if (typeRadio) {
-            typeRadio.checked = true;
+        if (selectedType) {
+            selectedType.checked = true;
         }
 
-        document.getElementById("transactionModalTitle").textContent =
-            "Edit Transaction";
-
-        document.getElementById("modalEyebrow").textContent =
-            "EDIT TRANSACTION";
+        setModalTitle("Edit Transaction");
     } else {
         editingTransactionId = null;
 
@@ -204,15 +217,15 @@ function openTransactionModal(transaction = null) {
             .toISOString()
             .split("T")[0];
 
-        document.querySelector(
+        const incomeRadio = document.querySelector(
             'input[name="transactionType"][value="income"]'
-        ).checked = true;
+        );
 
-        document.getElementById("transactionModalTitle").textContent =
-            "Add Transaction";
+        if (incomeRadio) {
+            incomeRadio.checked = true;
+        }
 
-        document.getElementById("modalEyebrow").textContent =
-            "TRANSACTION";
+        setModalTitle("Add Transaction");
     }
 
     transactionModal.classList.add("show");
@@ -222,6 +235,25 @@ function openTransactionModal(transaction = null) {
     setTimeout(() => {
         amountInput.focus();
     }, 100);
+}
+
+function setModalTitle(title) {
+    const titleElement =
+        document.getElementById("transactionModalTitle");
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+
+    const eyebrow =
+        document.getElementById("modalEyebrow");
+
+    if (eyebrow) {
+        eyebrow.textContent =
+            title === "Edit Transaction"
+                ? "EDIT TRANSACTION"
+                : "TRANSACTION";
+    }
 }
 
 function closeTransactionModalWindow() {
@@ -234,19 +266,52 @@ function closeTransactionModalWindow() {
     document.body.classList.remove("modal-open");
 
     transactionForm.reset();
-
     transactionIdInput.value = "";
+
     editingTransactionId = null;
 
     clearValidationErrors();
 }
+
+function openDeleteModal(transactionId) {
+    if (!deleteModal) {
+        return;
+    }
+
+    transactionToDeleteId = transactionId;
+
+    deleteModal.classList.add("show");
+    deleteModal.setAttribute("aria-hidden", "false");
+
+    document.body.classList.add("modal-open");
+}
+
+function closeDeleteModal() {
+    if (!deleteModal) {
+        return;
+    }
+
+    deleteModal.classList.remove("show");
+    deleteModal.setAttribute("aria-hidden", "true");
+
+    document.body.classList.remove("modal-open");
+
+    transactionToDeleteId = null;
+}
+
+
+/* =========================
+   FORM VALIDATION
+========================= */
 
 function getSelectedTransactionType() {
     const selectedType = document.querySelector(
         'input[name="transactionType"]:checked'
     );
 
-    return selectedType ? selectedType.value : "income";
+    return selectedType
+        ? selectedType.value
+        : "income";
 }
 
 function clearValidationErrors() {
@@ -274,27 +339,43 @@ function validateTransactionForm() {
     const date = dateInput.value;
     const description = descriptionInput.value.trim();
 
-    if (!amountInput.value || Number.isNaN(amount) || amount <= 0) {
-        amountError.textContent = "Enter an amount greater than 0.";
+    if (
+        !amountInput.value ||
+        Number.isNaN(amount) ||
+        amount <= 0
+    ) {
+        amountError.textContent =
+            "Enter an amount greater than 0.";
+
         amountInput.classList.add("input-error");
+
         isValid = false;
     }
 
     if (!category) {
-        categoryError.textContent = "Please select a category.";
+        categoryError.textContent =
+            "Please select a category.";
+
         categoryInput.classList.add("input-error");
+
         isValid = false;
     }
 
     if (!date) {
-        dateError.textContent = "Please select a date.";
+        dateError.textContent =
+            "Please select a date.";
+
         dateInput.classList.add("input-error");
+
         isValid = false;
     }
 
     if (!description) {
-        descriptionError.textContent = "Please enter a description.";
+        descriptionError.textContent =
+            "Please enter a description.";
+
         descriptionInput.classList.add("input-error");
+
         isValid = false;
     }
 
@@ -308,8 +389,16 @@ function validateTransactionForm() {
     return isValid;
 }
 
+
+/* =========================
+   TRANSACTION OBJECT
+========================= */
+
 function generateTransactionId() {
-    if (window.crypto && crypto.randomUUID) {
+    if (
+        window.crypto &&
+        typeof crypto.randomUUID === "function"
+    ) {
         return crypto.randomUUID();
     }
 
@@ -331,6 +420,132 @@ function createTransactionObject() {
     };
 }
 
+
+/* =========================
+   FORM SUBMIT
+========================= */
+
+transactionForm.addEventListener(
+    "submit",
+    (event) => {
+        event.preventDefault();
+
+        if (!validateTransactionForm()) {
+            return;
+        }
+
+        if (editingTransactionId) {
+            updateExistingTransaction();
+        } else {
+            addNewTransaction();
+        }
+
+        closeTransactionModalWindow();
+
+        renderTransactions();
+        updateDashboard();
+    }
+);
+
+function addNewTransaction() {
+    const transaction =
+        createTransactionObject();
+
+    transactions.unshift(transaction);
+
+    saveTransactions();
+
+    showToast(
+        "Transaction added successfully.",
+        "success"
+    );
+}
+
+function updateExistingTransaction() {
+    const index = transactions.findIndex(
+        (transaction) =>
+            transaction.id === editingTransactionId
+    );
+
+    if (index === -1) {
+        showToast(
+            "Transaction could not be found.",
+            "error"
+        );
+
+        return;
+    }
+
+    const existingTransaction =
+        transactions[index];
+
+    transactions[index] = {
+        ...existingTransaction,
+        type: getSelectedTransactionType(),
+        amount: Number(amountInput.value),
+        category: categoryInput.value,
+        date: dateInput.value,
+        description: descriptionInput.value.trim(),
+        notes: notesInput.value.trim()
+    };
+
+    saveTransactions();
+
+    showToast(
+        "Transaction updated successfully.",
+        "success"
+    );
+}
+
+
+/* =========================
+   DELETE
+========================= */
+
+function deleteTransaction() {
+    if (!transactionToDeleteId) {
+        return;
+    }
+
+    const previousLength =
+        transactions.length;
+
+    transactions = transactions.filter(
+        (transaction) =>
+            transaction.id !== transactionToDeleteId
+    );
+
+    if (transactions.length === previousLength) {
+        closeDeleteModal();
+
+        showToast(
+            "Transaction could not be found.",
+            "error"
+        );
+
+        return;
+    }
+
+    saveTransactions();
+
+    currentPage = 1;
+
+    closeDeleteModal();
+
+    renderTransactions();
+    updateDashboard();
+
+    showToast(
+        "Transaction deleted successfully.",
+        "success"
+    );
+}
+
+
+/* =========================
+   FORMATTING
+========================= */
+
 function formatCurrency(amount) {
     return new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -344,7 +559,12 @@ function formatDate(dateString) {
         return "-";
     }
 
-    const date = new Date(`${dateString}T00:00:00`);
+    const date =
+        new Date(`${dateString}T00:00:00`);
+
+    if (Number.isNaN(date.getTime())) {
+        return "-";
+    }
 
     return date.toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -362,13 +582,33 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
+
+/* =========================
+   FILTERING
+========================= */
+
 function getFilteredTransactions() {
-    const selectedType = typeFilter.value;
-    const selectedCategory = categoryFilter.value;
-    const selectedDate = dateFilter.value;
-    const searchTerm = searchInput.value
-        .trim()
-        .toLowerCase();
+    const selectedType =
+        typeFilter
+            ? typeFilter.value
+            : "all";
+
+    const selectedCategory =
+        categoryFilter
+            ? categoryFilter.value
+            : "all";
+
+    const selectedDate =
+        dateFilter
+            ? dateFilter.value
+            : "";
+
+    const searchTerm =
+        searchInput
+            ? searchInput.value
+                .trim()
+                .toLowerCase()
+            : "";
 
     return transactions
         .filter((transaction) => {
@@ -394,13 +634,30 @@ function getFilteredTransactions() {
             }
 
             if (searchTerm) {
-                const searchableText = `
-                    ${transaction.description}
-                    ${transaction.category}
-                    ${transaction.notes || ""}
-                `.toLowerCase();
+                const description =
+                    (
+                        transaction.description ||
+                        ""
+                    ).toLowerCase();
 
-                if (!searchableText.includes(searchTerm)) {
+                const category =
+                    (
+                        transaction.category ||
+                        ""
+                    ).toLowerCase();
+
+                const notes =
+                    (
+                        transaction.notes ||
+                        ""
+                    ).toLowerCase();
+
+                const matchesSearch =
+                    description.includes(searchTerm) ||
+                    category.includes(searchTerm) ||
+                    notes.includes(searchTerm);
+
+                if (!matchesSearch) {
                     return false;
                 }
             }
@@ -408,30 +665,104 @@ function getFilteredTransactions() {
             return true;
         })
         .sort((a, b) => {
-            return new Date(b.date) - new Date(a.date);
+            const dateDifference =
+                new Date(b.date) -
+                new Date(a.date);
+
+            if (dateDifference !== 0) {
+                return dateDifference;
+            }
+
+            return (
+                new Date(b.createdAt || 0) -
+                new Date(a.createdAt || 0)
+            );
         });
 }
 
-function renderTransactions() {
-    const filteredTransactions = getFilteredTransactions();
 
-    const totalPages = Math.max(
-        1,
-        Math.ceil(
-            filteredTransactions.length /
-            transactionsPerPage
+/* =========================
+   CATEGORY FILTER
+========================= */
+
+function updateCategoryFilter() {
+    if (!categoryFilter) {
+        return;
+    }
+
+    const currentValue =
+        categoryFilter.value;
+
+    const categories = [
+        ...new Set(
+            transactions
+                .map(
+                    (transaction) =>
+                        transaction.category
+                )
+                .filter(Boolean)
         )
-    );
+    ].sort();
+
+    categoryFilter.innerHTML = `
+        <option value="all">
+            All Categories
+        </option>
+    `;
+
+    categories.forEach((category) => {
+        const option =
+            document.createElement("option");
+
+        option.value = category;
+        option.textContent = category;
+
+        categoryFilter.appendChild(option);
+    });
+
+    if (
+        categories.includes(currentValue)
+    ) {
+        categoryFilter.value =
+            currentValue;
+    } else {
+        categoryFilter.value = "all";
+    }
+}
+
+
+/* =========================
+   TRANSACTION TABLE
+========================= */
+
+function renderTransactions() {
+    if (!transactionTableBody) {
+        return;
+    }
+
+    const filteredTransactions =
+        getFilteredTransactions();
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                filteredTransactions.length /
+                transactionsPerPage
+            )
+        );
 
     if (currentPage > totalPages) {
         currentPage = totalPages;
     }
 
     const startIndex =
-        (currentPage - 1) * transactionsPerPage;
+        (currentPage - 1) *
+        transactionsPerPage;
 
     const endIndex =
-        startIndex + transactionsPerPage;
+        startIndex +
+        transactionsPerPage;
 
     const pageTransactions =
         filteredTransactions.slice(
@@ -442,27 +773,54 @@ function renderTransactions() {
     transactionTableBody.innerHTML = "";
 
     if (pageTransactions.length === 0) {
+        const hasFilters =
+            (
+                typeFilter &&
+                typeFilter.value !== "all"
+            ) ||
+            (
+                categoryFilter &&
+                categoryFilter.value !== "all"
+            ) ||
+            (
+                dateFilter &&
+                dateFilter.value
+            ) ||
+            (
+                searchInput &&
+                searchInput.value.trim()
+            );
+
         transactionTableBody.innerHTML = `
             <tr class="empty-state-row">
                 <td colspan="6">
                     <div class="empty-state">
-                        <div class="empty-state-icon">₹</div>
-                        <h3>${
-                            transactions.length === 0
-                                ? "Your wallet is quiet"
-                                : "No transactions found"
-                        }</h3>
-                        <p>${
-                            transactions.length === 0
-                                ? "Start by adding your first income or expense transaction."
-                                : "Try changing your filters or search term."
-                        }</p>
+                        <div class="empty-state-icon">
+                            ₹
+                        </div>
+
+                        <h3>
+                            ${
+                                hasFilters
+                                    ? "No transactions found"
+                                    : "Your wallet is quiet"
+                            }
+                        </h3>
+
+                        <p>
+                            ${
+                                hasFilters
+                                    ? "Try changing your filters or search term."
+                                    : "Start by adding your first income or expense transaction."
+                            }
+                        </p>
+
                         ${
-                            transactions.length === 0
+                            !hasFilters
                                 ? `
                                     <button
                                         class="primary-btn small-btn"
-                                        id="emptyAddBtn"
+                                        id="tableEmptyAddBtn"
                                         type="button"
                                     >
                                         + Add Transaction
@@ -475,395 +833,487 @@ function renderTransactions() {
             </tr>
         `;
 
-        const newEmptyAddBtn =
-            document.getElementById("emptyAddBtn");
+        const tableEmptyAddBtn =
+            document.getElementById(
+                "tableEmptyAddBtn"
+            );
 
-        if (newEmptyAddBtn) {
-            newEmptyAddBtn.addEventListener(
+        if (tableEmptyAddBtn) {
+            tableEmptyAddBtn.addEventListener(
                 "click",
                 () => openTransactionModal()
             );
         }
     } else {
-        pageTransactions.forEach((transaction) => {
-            const row = document.createElement("tr");
+        pageTransactions.forEach(
+            (transaction) => {
+                const row =
+                    document.createElement("tr");
 
-            const typeClass =
-                transaction.type === "income"
-                    ? "income"
-                    : "expense";
+                const typeClass =
+                    transaction.type === "income"
+                        ? "income"
+                        : "expense";
 
-            const amountPrefix =
-                transaction.type === "income"
-                    ? "+"
-                    : "-";
+                const amountPrefix =
+                    transaction.type === "income"
+                        ? "+"
+                        : "-";
 
-            row.innerHTML = `
-                <td>${formatDate(transaction.date)}</td>
-
-                <td>
-                    <div class="transaction-description">
-                        <strong>
-                            ${escapeHTML(transaction.description)}
-                        </strong>
-                        ${
-                            transaction.notes
-                                ? `
-                                    <small>
-                                        ${escapeHTML(
-                                            transaction.notes
-                                        )}
-                                    </small>
-                                `
-                                : ""
-                        }
-                    </div>
-                </td>
-
-                <td>
-                    <span class="category-badge">
-                        ${escapeHTML(transaction.category)}
-                    </span>
-                </td>
-
-                <td>
-                    <span class="transaction-type ${typeClass}">
-                        ${
-                            transaction.type === "income"
-                                ? "Income"
-                                : "Expense"
-                        }
-                    </span>
-                </td>
-
-                <td>
-                    <strong class="${typeClass}-amount">
-                        ${amountPrefix}${formatCurrency(
-                            transaction.amount
+                row.innerHTML = `
+                    <td>
+                        ${formatDate(
+                            transaction.date
                         )}
-                    </strong>
-                </td>
+                    </td>
 
-                <td>
-                    <div class="table-actions">
-                        <button
-                            type="button"
-                            class="table-action-btn edit-btn"
-                            data-action="edit"
-                            data-id="${transaction.id}"
-                            title="Edit transaction"
+                    <td>
+                        <div class="transaction-description">
+                            <strong>
+                                ${escapeHTML(
+                                    transaction.description
+                                )}
+                            </strong>
+
+                            ${
+                                transaction.notes
+                                    ? `
+                                        <span class="transaction-note">
+                                            ${escapeHTML(
+                                                transaction.notes
+                                            )}
+                                        </span>
+                                    `
+                                    : ""
+                            }
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="category-badge">
+                            ${escapeHTML(
+                                transaction.category
+                            )}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="type-badge ${typeClass}">
+                            ${
+                                transaction.type ===
+                                "income"
+                                    ? "Income"
+                                    : "Expense"
+                            }
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong
+                            class="${
+                                transaction.type ===
+                                "income"
+                                    ? "amount-income"
+                                    : "amount-expense"
+                            }"
                         >
-                            Edit
-                        </button>
+                            ${amountPrefix}${formatCurrency(
+                                transaction.amount
+                            )}
+                        </strong>
+                    </td>
 
-                        <button
-                            type="button"
-                            class="table-action-btn delete-btn"
-                            data-action="delete"
-                            data-id="${transaction.id}"
-                            title="Delete transaction"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </td>
-            `;
+                    <td>
+                        <div class="action-buttons">
+                            <button
+                                type="button"
+                                class="table-action-btn"
+                                data-action="edit"
+                                data-id="${transaction.id}"
+                                title="Edit transaction"
+                            >
+                                ✎
+                            </button>
 
-            transactionTableBody.appendChild(row);
-        });
+                            <button
+                                type="button"
+                                class="table-action-btn delete"
+                                data-action="delete"
+                                data-id="${transaction.id}"
+                                title="Delete transaction"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                transactionTableBody.appendChild(row);
+            }
+        );
     }
 
-    transactionResultCount.textContent =
-        `Showing ${filteredTransactions.length} transaction${
-            filteredTransactions.length === 1
-                ? ""
-                : "s"
-        }`;
+    if (transactionResultCount) {
+        transactionResultCount.textContent =
+            `Showing ${
+                filteredTransactions.length
+            } transaction${
+                filteredTransactions.length === 1
+                    ? ""
+                    : "s"
+            }`;
+    }
 
-    pageInfo.textContent =
-        `Page ${currentPage} of ${totalPages}`;
+    if (pageInfo) {
+        pageInfo.textContent =
+            `Page ${currentPage} of ${totalPages}`;
+    }
 
-    previousPageBtn.disabled =
-        currentPage === 1;
+    if (previousPageBtn) {
+        previousPageBtn.disabled =
+            currentPage === 1;
+    }
 
-    nextPageBtn.disabled =
-        currentPage >= totalPages;
+    if (nextPageBtn) {
+        nextPageBtn.disabled =
+            currentPage >= totalPages;
+    }
 }
 
+
+/* =========================
+   DASHBOARD TOTALS
+========================= */
+
 function updateDashboard() {
-    const income = transactions
-        .filter((transaction) => transaction.type === "income")
-        .reduce(
-            (total, transaction) =>
-                total + transaction.amount,
-            0
-        );
+    const income =
+        transactions
+            .filter(
+                (transaction) =>
+                    transaction.type === "income"
+            )
+            .reduce(
+                (total, transaction) =>
+                    total +
+                    Number(transaction.amount || 0),
+                0
+            );
 
-    const expenses = transactions
-        .filter((transaction) => transaction.type === "expense")
-        .reduce(
-            (total, transaction) =>
-                total + transaction.amount,
-            0
-        );
+    const expenses =
+        transactions
+            .filter(
+                (transaction) =>
+                    transaction.type === "expense"
+            )
+            .reduce(
+                (total, transaction) =>
+                    total +
+                    Number(transaction.amount || 0),
+                0
+            );
 
-    const balance = income - expenses;
+    const balance =
+        income - expenses;
 
-    totalIncome.textContent =
-        formatCurrency(income);
+    if (totalIncome) {
+        totalIncome.textContent =
+            formatCurrency(income);
+    }
 
-    totalExpenses.textContent =
-        formatCurrency(expenses);
+    if (totalExpenses) {
+        totalExpenses.textContent =
+            formatCurrency(expenses);
+    }
 
-    currentBalance.textContent =
-        formatCurrency(balance);
+    if (currentBalance) {
+        currentBalance.textContent =
+            formatCurrency(balance);
+    }
 
-    transactionCount.textContent =
-        transactions.length;
+    if (transactionCount) {
+        transactionCount.textContent =
+            transactions.length;
+    }
 
-    savedTransactionCount.textContent =
-        transactions.length;
+    if (savedTransactionCount) {
+        savedTransactionCount.textContent =
+            transactions.length;
+    }
+
+    const incomeCount =
+        transactions.filter(
+            (transaction) =>
+                transaction.type === "income"
+        ).length;
+
+    const expenseCount =
+        transactions.filter(
+            (transaction) =>
+                transaction.type === "expense"
+        ).length;
 
     if (transactions.length === 0) {
+        if (incomeChange) {
+            incomeChange.textContent =
+                "No transactions yet";
+
+            incomeChange.className =
+                "summary-change neutral";
+        }
+
+        if (expenseChange) {
+            expenseChange.textContent =
+                "No transactions yet";
+
+            expenseChange.className =
+                "summary-change neutral";
+        }
+
+        if (balanceStatus) {
+            balanceStatus.textContent =
+                "Add transactions to begin";
+
+            balanceStatus.className =
+                "summary-change neutral";
+        }
+
+        if (transactionStatus) {
+            transactionStatus.textContent =
+                "No activity recorded";
+
+            transactionStatus.className =
+                "summary-change neutral";
+        }
+
+        return;
+    }
+
+    if (incomeChange) {
         incomeChange.textContent =
-            "No transactions yet";
-
-        expenseChange.textContent =
-            "No transactions yet";
-
-        balanceStatus.textContent =
-            "Add transactions to begin";
-
-        transactionStatus.textContent =
-            "No activity recorded";
+            `${incomeCount} income transaction${
+                incomeCount === 1
+                    ? ""
+                    : "s"
+            }`;
 
         incomeChange.className =
-            "summary-change neutral";
+            "summary-change positive";
+    }
+
+    if (expenseChange) {
+        expenseChange.textContent =
+            `${expenseCount} expense transaction${
+                expenseCount === 1
+                    ? ""
+                    : "s"
+            }`;
 
         expenseChange.className =
-            "summary-change neutral";
+            "summary-change negative";
+    }
+
+    if (balanceStatus) {
+        balanceStatus.textContent =
+            balance >= 0
+                ? "You are currently in positive balance"
+                : "Expenses are higher than income";
 
         balanceStatus.className =
-            "summary-change neutral";
+            balance >= 0
+                ? "summary-change positive"
+                : "summary-change negative";
+    }
+
+    if (transactionStatus) {
+        transactionStatus.textContent =
+            `${transactions.length} transaction${
+                transactions.length === 1
+                    ? ""
+                    : "s"
+            } recorded`;
 
         transactionStatus.className =
             "summary-change neutral";
-
-        return;
     }
-
-    const incomeCount = transactions.filter(
-        (transaction) =>
-            transaction.type === "income"
-    ).length;
-
-    const expenseCount = transactions.filter(
-        (transaction) =>
-            transaction.type === "expense"
-    ).length;
-
-    incomeChange.textContent =
-        `${incomeCount} income transaction${
-            incomeCount === 1
-                ? ""
-                : "s"
-        }`;
-
-    expenseChange.textContent =
-        `${expenseCount} expense transaction${
-            expenseCount === 1
-                ? ""
-                : "s"
-        }`;
-
-    balanceStatus.textContent =
-        balance >= 0
-            ? "You are currently in positive balance"
-            : "Expenses are higher than income";
-
-    transactionStatus.textContent =
-        `${transactions.length} transaction${
-            transactions.length === 1
-                ? ""
-                : "s"
-        } recorded`;
-
-    balanceStatus.className =
-        balance >= 0
-            ? "summary-change positive"
-            : "summary-change negative";
-
-    transactionStatus.className =
-        "summary-change neutral";
 }
 
-function saveNewTransaction() {
-    const transaction =
-        createTransactionObject();
 
-    transactions.unshift(transaction);
+/* =========================
+   FILTER EVENTS
+========================= */
 
-    saveTransactions();
-
-    showToast(
-        "Transaction added successfully."
-    );
-}
-
-function updateExistingTransaction() {
-    const index = transactions.findIndex(
-        (transaction) =>
-            transaction.id === editingTransactionId
-    );
-
-    if (index === -1) {
-        return;
-    }
-
-    const existingTransaction =
-        transactions[index];
-
-    transactions[index] = {
-        ...existingTransaction,
-        type: getSelectedTransactionType(),
-        amount: Number(amountInput.value),
-        category: categoryInput.value,
-        date: dateInput.value,
-        description: descriptionInput.value.trim(),
-        notes: notesInput.value.trim()
-    };
-
-    saveTransactions();
-
-    showToast(
-        "Transaction updated successfully."
-    );
-}
-
-function openDeleteModal(transactionId) {
-    if (!deleteModal) {
-        return;
-    }
-
-    transactionToDeleteId =
-        transactionId;
-
-    deleteModal.classList.add("show");
-    deleteModal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-    document.body.classList.add(
-        "modal-open"
-    );
-}
-
-function closeDeleteModal() {
-    if (!deleteModal) {
-        return;
-    }
-
-    deleteModal.classList.remove("show");
-    deleteModal.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-    document.body.classList.remove(
-        "modal-open"
-    );
-
-    transactionToDeleteId = null;
-}
-
-function deleteTransaction() {
-    if (!transactionToDeleteId) {
-        return;
-    }
-
-    transactions =
-        transactions.filter(
-            (transaction) =>
-                transaction.id !==
-                transactionToDeleteId
+[
+    typeFilter,
+    categoryFilter,
+    dateFilter
+]
+    .filter(Boolean)
+    .forEach((element) => {
+        element.addEventListener(
+            "change",
+            () => {
+                currentPage = 1;
+                renderTransactions();
+            }
         );
+    });
 
-    saveTransactions();
-
-    currentPage = 1;
-
-    closeDeleteModal();
-    renderTransactions();
-    updateDashboard();
-
-    showToast(
-        "Transaction deleted successfully."
+if (searchInput) {
+    searchInput.addEventListener(
+        "input",
+        () => {
+            currentPage = 1;
+            renderTransactions();
+        }
     );
 }
 
-function showToast(message) {
-    const toastContainer =
-        document.getElementById(
-            "toastContainer"
-        );
+if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener(
+        "click",
+        () => {
+            if (typeFilter) {
+                typeFilter.value = "all";
+            }
 
-    if (!toastContainer) {
-        return;
-    }
+            if (categoryFilter) {
+                categoryFilter.value = "all";
+            }
 
-    const toast =
-        document.createElement("div");
+            if (dateFilter) {
+                dateFilter.value = "";
+            }
 
-    toast.className = "toast";
-    toast.textContent = message;
+            if (searchInput) {
+                searchInput.value = "";
+            }
 
-    toastContainer.appendChild(toast);
+            currentPage = 1;
 
-    setTimeout(() => {
-        toast.classList.add("hide");
+            renderTransactions();
 
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-    }, 2500);
+            showToast(
+                "Filters cleared.",
+                "success"
+            );
+        }
+    );
 }
 
-transactionForm.addEventListener(
-    "submit",
-    (event) => {
-        event.preventDefault();
 
-        if (!validateTransactionForm()) {
-            return;
+/* =========================
+   PAGINATION
+========================= */
+
+if (previousPageBtn) {
+    previousPageBtn.addEventListener(
+        "click",
+        () => {
+            if (currentPage > 1) {
+                currentPage--;
+
+                renderTransactions();
+            }
         }
+    );
+}
 
-        if (editingTransactionId) {
-            updateExistingTransaction();
-        } else {
-            saveNewTransaction();
+if (nextPageBtn) {
+    nextPageBtn.addEventListener(
+        "click",
+        () => {
+            const filteredTransactions =
+                getFilteredTransactions();
+
+            const totalPages =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        filteredTransactions.length /
+                        transactionsPerPage
+                    )
+                );
+
+            if (currentPage < totalPages) {
+                currentPage++;
+
+                renderTransactions();
+            }
         }
+    );
+}
 
-        closeTransactionModalWindow();
 
-        renderTransactions();
-        updateDashboard();
-    }
-);
+/* =========================
+   TABLE ACTIONS
+========================= */
+
+if (transactionTableBody) {
+    transactionTableBody.addEventListener(
+        "click",
+        (event) => {
+            const button =
+                event.target.closest(
+                    "button[data-action]"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            const action =
+                button.dataset.action;
+
+            const transactionId =
+                button.dataset.id;
+
+            if (action === "edit") {
+                const transaction =
+                    transactions.find(
+                        (item) =>
+                            item.id ===
+                            transactionId
+                    );
+
+                if (transaction) {
+                    openTransactionModal(
+                        transaction
+                    );
+                }
+            }
+
+            if (action === "delete") {
+                openDeleteModal(
+                    transactionId
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================
+   ADD BUTTONS
+========================= */
 
 [
     addTransactionBtn,
     quickAddBtn,
     emptyAddBtn,
     mobileAddBtn
-].forEach((button) => {
-    if (button) {
+]
+    .filter(Boolean)
+    .forEach((button) => {
         button.addEventListener(
             "click",
             () => openTransactionModal()
         );
-    }
-});
+    });
+
+
+/* =========================
+   MODAL BUTTONS
+========================= */
 
 if (cancelTransactionBtn) {
     cancelTransactionBtn.addEventListener(
@@ -893,61 +1343,6 @@ if (transactionModal) {
     );
 }
 
-if (deleteModal) {
-    deleteModal.addEventListener(
-        "click",
-        (event) => {
-            if (
-                event.target ===
-                deleteModal
-            ) {
-                closeDeleteModal();
-            }
-        }
-    );
-}
-
-transactionTableBody.addEventListener(
-    "click",
-    (event) => {
-        const button =
-            event.target.closest(
-                "button[data-action]"
-            );
-
-        if (!button) {
-            return;
-        }
-
-        const action =
-            button.dataset.action;
-
-        const transactionId =
-            button.dataset.id;
-
-        if (action === "edit") {
-            const transaction =
-                transactions.find(
-                    (item) =>
-                        item.id ===
-                        transactionId
-                );
-
-            if (transaction) {
-                openTransactionModal(
-                    transaction
-                );
-            }
-        }
-
-        if (action === "delete") {
-            openDeleteModal(
-                transactionId
-            );
-        }
-    }
-);
-
 if (cancelDeleteBtn) {
     cancelDeleteBtn.addEventListener(
         "click",
@@ -962,111 +1357,99 @@ if (confirmDeleteBtn) {
     );
 }
 
-[typeFilter, categoryFilter, dateFilter]
-    .filter(Boolean)
-    .forEach((element) => {
-        element.addEventListener(
-            "change",
-            () => {
-                currentPage = 1;
-                renderTransactions();
-            }
-        );
-    });
-
-if (searchInput) {
-    searchInput.addEventListener(
-        "input",
-        () => {
-            currentPage = 1;
-            renderTransactions();
-        }
-    );
-}
-
-if (clearFiltersBtn) {
-    clearFiltersBtn.addEventListener(
+if (deleteModal) {
+    deleteModal.addEventListener(
         "click",
-        () => {
-            typeFilter.value = "all";
-            categoryFilter.value = "all";
-            dateFilter.value = "";
-            searchInput.value = "";
-
-            currentPage = 1;
-
-            renderTransactions();
-        }
-    );
-}
-
-if (previousPageBtn) {
-    previousPageBtn.addEventListener(
-        "click",
-        () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTransactions();
-            }
-        }
-    );
-}
-
-if (nextPageBtn) {
-    nextPageBtn.addEventListener(
-        "click",
-        () => {
-            const filteredTransactions =
-                getFilteredTransactions();
-
-            const totalPages =
-                Math.max(
-                    1,
-                    Math.ceil(
-                        filteredTransactions.length /
-                        transactionsPerPage
-                    )
-                );
-
+        (event) => {
             if (
-                currentPage <
-                totalPages
-            ) {
-                currentPage++;
-                renderTransactions();
-            }
-        }
-    );
-}
-
-document.addEventListener(
-    "keydown",
-    (event) => {
-        if (event.key === "Escape") {
-            if (
-                transactionModal.classList.contains(
-                    "show"
-                )
-            ) {
-                closeTransactionModalWindow();
-            }
-
-            if (
-                deleteModal &&
-                deleteModal.classList.contains(
-                    "show"
-                )
+                event.target ===
+                deleteModal
             ) {
                 closeDeleteModal();
             }
         }
+    );
+}
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        if (
+            transactionModal &&
+            transactionModal.classList.contains("show")
+        ) {
+            closeTransactionModalWindow();
+        }
+
+        if (
+            deleteModal &&
+            deleteModal.classList.contains("show")
+        ) {
+            closeDeleteModal();
+        }
     }
 );
 
+
+/* =========================
+   TOAST
+========================= */
+
+function showToast(
+    message,
+    type = "success"
+) {
+    const toastContainer =
+        document.getElementById(
+            "toastContainer"
+        );
+
+    if (!toastContainer) {
+        return;
+    }
+
+    const toast =
+        document.createElement("div");
+
+    toast.className =
+        `toast ${type}`;
+
+    toast.textContent =
+        message;
+
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add("hide");
+
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2500);
+}
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
 loadTransactions();
+
+updateCategoryFilter();
+
 renderTransactions();
+
 updateDashboard();
 
 console.log(
-    "SpendWise with LocalStorage initialized."
+    "SpendWise initialized successfully."
 );
