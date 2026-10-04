@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SpendWise - A smart personal expense and income management dashboard.">
+    <meta name="theme-color" content="#4f46e5">
+    <title>SpendWise | Personal Finance Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Open menu">☰</button>
+                <a href="#" class="brand" aria-label="SpendWise home">
+                    <span class="brand-logo">₹</span>
+                    <span class="brand-text">
+                        <strong>SpendWise</strong>
+                        <small>Know where your money goes.</small>
+                    </span>
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle theme">☾</button>
+                <button class="icon-btn" id="exportDataBtn" type="button" aria-label="Export data" title="Export data">⇩</button>
+                <button class="profile-btn" type="button" aria-label="User profile">APS</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <span>⌂</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#transactions" class="nav-link" data-section="transactions">
+                    <span>⇄</span>
+                    <span>Transactions</span>
+                </a>
+                <a href="#analytics" class="nav-link" data-section="analytics">
+                    <span>◫</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="#insights" class="nav-link" data-section="insights">
+                    <span>✦</span>
+                    <span>Insights</span>
+                </a>
+                <a href="#settings" class="nav-link" data-section="settings">
+                    <span>⚙</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="storage-status">
+                    <span class="status-dot"></span>
+                    <div>
+                        <strong>Local data active</strong>
+                        <small>Your data stays in this browser.</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Dashboard -->
+            <section id="dashboard" class="page-section active-section">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">PERSONAL FINANCE</span>
+                        <h1>Financial Overview</h1>
+                        <p>Track your money, understand your spending, and make better decisions.</p>
+                    </div>
+                    <div class="heading-actions">
+                        <select id="monthSelector" class="month-selector" aria-label="Select month">
+                            <option value="current">October 2026</option>
+                        </select>
+                        <button class="primary-btn" id="quickAddBtn" type="button">
+                            <span>+</span> Add Transaction
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid">
+                    <article class="summary-card income-summary">
+                        <div class="summary-card-top">
+                            <div>
+                                <span class="summary-label">TOTAL INCOME</span>
+                                <h2 id="totalIncome">₹0.00</h2>
+                            </div>
+                            <span class="summary-icon">↑</span>
+                        </div>
+                        <p id="incomeChange" class="summary-change neutral">No transactions yet</p>
+                    </article>
+
+                    <article class="summary-card expense-summary">
+                        <div class="summary-card-top">
+                            <div>
+                                <span class="summary-label">TOTAL EXPENSES</span>
+                                <h2 id="totalExpenses">₹0.00</h2>
+                            </div>
+                            <span class="summary-icon">↓</span>
+                        </div>
+                        <p id="expenseChange" class="summary-change neutral">No transactions yet</p>
+                    </article>
+
+                    <article class="summary-card balance-summary">
+                        <div class="summary-card-top">
+                            <div>
+                                <span class="summary-label">CURRENT BALANCE</span>
+                                <h2 id="currentBalance">₹0.00</h2>
+                            </div>
+                            <span class="summary-icon">₹</span>
+                        </div>
+                        <p id="balanceStatus" class="summary-change neutral">Add transactions to begin</p>
+                    </article>
+
+                    <article class="summary-card transaction-summary">
+                        <div class="summary-card-top">
+                            <div>
+                                <span class="summary-label">TRANSACTIONS</span>
+                                <h2 id="transactionCount">0</h2>
+                            </div>
+                            <span class="summary-icon">#</span>
+                        </div>
+                        <p id="transactionStatus" class="summary-change neutral">No activity recorded</p>
+                    </article>
+                </div>
+
+                <!-- Financial Health + Quick Insight -->
+                <div class="hero-grid">
+                    <article class="panel financial-health-card">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">FINANCIAL HEALTH</span>
+                                <h2>Your money health</h2>
+                            </div>
+                            <span class="health-badge" id="healthBadge">Waiting</span>
+                        </div>
+
+                        <div class="health-content">
+                            <div class="health-score-wrapper">
+                                <div class="health-score-circle" id="healthScoreCircle">
+                                    <div>
+                                        <strong id="healthScore">0</strong>
+                                        <span>/100</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="health-details">
+                                <h3 id="healthTitle">Start tracking</h3>
+                                <p id="healthMessage">Add income and expense transactions to calculate your financial health score.</p>
+                                <div class="health-metrics">
+                                    <div>
+                                        <span>Savings Rate</span>
+                                        <strong id="savingsRate">0%</strong>
+                                    </div>
+                                    <div>
+                                        <span>Expense Ratio</span>
+                                        <strong id="expenseRatio">0%</strong>
+                                    </div>
+                                    <div>
+                                        <span>Daily Average</span>
+                                        <strong id="dailyAverage">₹0</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel money-insight-card">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">MONEY INSIGHT</span>
+                                <h2>What your data says</h2>
+                            </div>
+                            <span class="insight-icon">✦</span>
+                        </div>
+
+                        <div class="insight-content">
+                            <div class="insight-highlight">
+                                <span class="insight-label">TOP SPENDING CATEGORY</span>
+                                <strong id="topCategory">No data</strong>
+                                <span id="topCategoryAmount">₹0.00 spent</span>
+                            </div>
+                            <div class="insight-stats">
+                                <div>
+                                    <span>Highest Expense</span>
+                                    <strong id="highestExpense">₹0.00</strong>
+                                </div>
+                                <div>
+                                    <span>Average Expense</span>
+                                    <strong id="averageExpense">₹0.00</strong>
+                                </div>
+                            </div>
+                            <p id="insightMessage">Your personalized spending insight will appear here.</p>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Dashboard Bottom -->
+                <div class="dashboard-grid">
+                    <article class="panel trend-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">SPENDING TREND</span>
+                                <h2>Expense trend</h2>
+                            </div>
+                            <span class="panel-period" id="trendPeriod">This month</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="expenseTrendChart" aria-label="Expense trend chart"></canvas>
+                            <div class="chart-empty" id="trendEmpty">
+                                <span>◫</span>
+                                <strong>No trend data</strong>
+                                <p>Add expenses to see your spending pattern.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel category-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">CATEGORY BREAKDOWN</span>
+                                <h2>Where money goes</h2>
+                            </div>
+                        </div>
+                        <div class="category-chart-container">
+                            <canvas id="categoryChart" aria-label="Expense category chart"></canvas>
+                            <div class="chart-empty" id="categoryEmpty">
+                                <span>◉</span>
+                                <strong>No category data</strong>
+                                <p>Add expenses to see your category breakdown.</p>
+                            </div>
+                        </div>
+                        <div class="category-legend" id="categoryLegend"></div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Transactions -->
+            <section id="transactions" class="page-section">
+                <div class="page-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">ACTIVITY</span>
+                        <h1>Transactions</h1>
+                        <p>Manage, search, filter, edit, and delete your financial records.</p>
+                    </div>
+                    <button class="primary-btn" id="addTransactionBtn" type="button">
+                        <span>+</span> Add Transaction
+                    </button>
+                </div>
+
+                <article class="panel transactions-panel">
+                    <div class="filter-bar">
+                        <div class="filter-field">
+                            <label for="typeFilter">Type</label>
+                            <select id="typeFilter">
+                                <option value="all">All Transactions</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="categoryFilter">Category</label>
+                            <select id="categoryFilter">
+                                <option value="all">All Categories</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Bills">Bills & Utilities</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Rent">Rent</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="dateFilter">Date</label>
+                            <input type="date" id="dateFilter">
+                        </div>
+
+                        <div class="filter-field search-field">
+                            <label for="searchInput">Search</label>
+                            <div class="search-wrapper">
+                                <span>⌕</span>
+                                <input type="search" id="searchInput" placeholder="Search description or category...">
+                            </div>
+                        </div>
+
+                        <button class="secondary-btn" id="clearFiltersBtn" type="button">Clear Filters</button>
+                    </div>
+
+                    <div class="table-meta">
+                        <span id="transactionResultCount">Showing 0 transactions</span>
+                        <span class="table-storage-note">Data stored locally</span>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionTableBody">
+                                <tr class="empty-state-row">
+                                    <td colspan="6">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">₹</div>
+                                            <h3>Your wallet is quiet</h3>
+                                            <p>Start by adding your first income or expense transaction.</p>
+                                            <button class="primary-btn small-btn" id="emptyAddBtn" type="button">+ Add Transaction</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="pagination">
+                        <button type="button" class="pagination-btn" id="previousPageBtn" disabled>← Previous</button>
+                        <span id="pageInfo">Page 1</span>
+                        <button type="button" class="pagination-btn" id="nextPageBtn" disabled>Next →</button>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Analytics -->
+            <section id="analytics" class="page-section">
+                <div class="page-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">ANALYTICS</span>
+                        <h1>Spending Analytics</h1>
+                        <p>Understand your financial patterns through simple visual analysis.</p>
+                    </div>
+                </div>
+
+                <div class="analytics-summary-grid">
+                    <article class="panel analytics-stat">
+                        <span>Monthly Income</span>
+                        <strong id="analyticsIncome">₹0.00</strong>
+                    </article>
+                    <article class="panel analytics-stat">
+                        <span>Monthly Expenses</span>
+                        <strong id="analyticsExpenses">₹0.00</strong>
+                    </article>
+                    <article class="panel analytics-stat">
+                        <span>Average Expense</span>
+                        <strong id="analyticsAverage">₹0.00</strong>
+                    </article>
+                    <article class="panel analytics-stat">
+                        <span>Largest Expense</span>
+                        <strong id="analyticsLargest">₹0.00</strong>
+                    </article>
+                </div>
+
+                <div class="analytics-grid">
+                    <article class="panel large-chart-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">MONTHLY PERFORMANCE</span>
+                                <h2>Income vs Expenses</h2>
+                            </div>
+                        </div>
+                        <div class="large-chart-container">
+                            <canvas id="incomeExpenseChart" aria-label="Income versus expenses chart"></canvas>
+                            <div class="chart-empty" id="incomeExpenseEmpty">
+                                <span>▥</span>
+                                <strong>No analytics yet</strong>
+                                <p>Add transactions to generate your financial analysis.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel monthly-panel">
+                        <div class="panel-header">
+                            <div>
+                                <span class="eyebrow">MONTHLY SUMMARY</span>
+                                <h2>Expense summary</h2>
+                            </div>
+                        </div>
+                        <div class="monthly-summary" id="monthlySummary">
+                            <div class="summary-row">
+                                <span>Food</span>
+                                <strong>₹0.00</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Transport</span>
+                                <strong>₹0.00</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shopping</span>
+                                <strong>₹0.00</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Other</span>
+                                <strong>₹0.00</strong>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Insights -->
+            <section id="insights" class="page-section">
+                <div class="page-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">SMART INSIGHTS</span>
+                        <h1>Money Insights</h1>
+                        <p>Useful observations generated from your transaction history.</p>
+                    </div>
+                </div>
+
+                <div class="insights-grid">
+                    <article class="panel insight-card">
+                        <div class="insight-card-icon">↑</div>
+                        <span>TOP CATEGORY</span>
+                        <h2 id="insightTopCategory">No data</h2>
+                        <p id="insightTopCategoryText">Your top spending category will appear here.</p>
+                    </article>
+
+                    <article class="panel insight-card">
+                        <div class="insight-card-icon">↗</div>
+                        <span>SPENDING RATE</span>
+                        <h2 id="insightSpendingRate">0%</h2>
+                        <p id="insightSpendingRateText">Add transactions to calculate your spending rate.</p>
+                    </article>
+
+                    <article class="panel insight-card">
+                        <div class="insight-card-icon">₹</div>
+                        <span>HIGHEST EXPENSE</span>
+                        <h2 id="insightHighestExpense">₹0.00</h2>
+                        <p id="insightHighestExpenseText">Your highest individual expense will appear here.</p>
+                    </article>
+
+                    <article class="panel insight-card">
+                        <div class="insight-card-icon">✓</div>
+                        <span>FINANCIAL STATUS</span>
+                        <h2 id="insightFinancialStatus">Waiting</h2>
+                        <p id="insightFinancialStatusText">Your financial status will be calculated from your activity.</p>
+                    </article>
+                </div>
+
+                <article class="panel recommendation-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">PERSONALIZED RECOMMENDATION</span>
+                            <h2>A small observation</h2>
+                        </div>
+                        <span class="recommendation-icon">✦</span>
+                    </div>
+                    <div class="recommendation-content">
+                        <h3 id="recommendationTitle">Start building your financial history</h3>
+                        <p id="recommendationText">Once you add transactions, SpendWise will analyze your spending patterns and provide a simple recommendation.</p>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Settings -->
+            <section id="settings" class="page-section">
+                <div class="page-heading compact-heading">
+                    <div>
+                        <span class="eyebrow">PREFERENCES</span>
+                        <h1>Settings</h1>
+                        <p>Manage your local data and application preferences.</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <article class="panel settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <span class="settings-icon">▣</span>
+                                <div>
+                                    <h2>Data Management</h2>
+                                    <p>Backup or restore your transaction data.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button class="secondary-btn" id="settingsExportBtn" type="button">⇩ Export Data</button>
+                            <button class="secondary-btn" id="importDataBtn" type="button">⇧ Import Data</button>
+                            <input type="file" id="importFileInput" accept=".json,application/json" hidden>
+                        </div>
+                    </article>
+
+                    <article class="panel settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <span class="settings-icon">☾</span>
+                                <div>
+                                    <h2>Appearance</h2>
+                                    <p>Choose how SpendWise looks on your device.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div>
+                                <strong>Dark mode</strong>
+                                <span>Use a darker interface for low-light environments.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeSwitch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </article>
+
+                    <article class="panel settings-card danger-settings">
+                        <div class="settings-card-header">
+                            <div>
+                                <span class="settings-icon danger-icon">!</span>
+                                <div>
+                                    <h2>Danger Zone</h2>
+                                    <p>These actions permanently affect local application data.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="danger-btn" id="clearAllDataBtn" type="button">Clear All Transactions</button>
+                    </article>
+
+                    <article class="panel settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <span class="settings-icon">i</span>
+                                <div>
+                                    <h2>Storage Information</h2>
+                                    <p>SpendWise uses browser LocalStorage for persistence.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="storage-information">
+                            <div>
+                                <span>Storage status</span>
+                                <strong class="storage-active"><span class="status-dot"></span> Active</strong>
+                            </div>
+                            <div>
+                                <span>Saved transactions</span>
+                                <strong id="savedTransactionCount">0</strong>
+                            </div>
+                            <div>
+                                <span>Application version</span>
+                                <strong>1.0.0</strong>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <!-- Transaction Modal -->
+        <div class="modal-overlay" id="transactionModal" aria-hidden="true">
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="transactionModalTitle">
+                <div class="modal-header">
+                    <div>
+                        <span class="eyebrow" id="modalEyebrow">TRANSACTION</span>
+                        <h2 id="transactionModalTitle">Add Transaction</h2>
+                    </div>
+                    <button class="modal-close" id="closeTransactionModal" type="button" aria-label="Close modal">×</button>
+                </div>
+
+                <form id="transactionForm">
+                    <input type="hidden" id="transactionId">
+
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Transaction Type</label>
+                            <div class="transaction-type-selector">
+                                <label class="type-option income-option">
+                                    <input type="radio" name="transactionType" value="income" checked>
+                                    <span>↑ Income</span>
+                                </label>
+                                <label class="type-option expense-option">
+                                    <input type="radio" name="transactionType" value="expense">
+                                    <span>↓ Expense</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount">Amount *</label>
+                            <div class="input-with-prefix">
+                                <span>₹</span>
+                                <input type="number" id="amount" min="0.01" step="0.01" placeholder="0.00" required>
+                            </div>
+                            <small class="field-error" id="amountError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" required>
+                                <option value="">Select category</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Food">Food</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Bills">Bills & Utilities</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Education">Education</option>
+                                <option value="Rent">Rent</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <small class="field-error" id="categoryError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date">Date *</label>
+                            <input type="date" id="date" required>
+                            <small class="field-error" id="dateError"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description *</label>
+                            <input type="text" id="description" maxlength="100" placeholder="e.g. Monthly salary" required>
+                            <small class="field-error" id="descriptionError"></small>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="notes">Notes <span>(optional)</span></label>
+                            <textarea id="notes" rows="3" maxlength="250" placeholder="Add an optional note..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-message" id="formMessage" role="alert"></div>
+
+                    <div class="modal-actions">
+                        <button class="secondary-btn" id="cancelTransactionBtn" type="button">Cancel</button>
+                        <button class="primary-btn" id="saveTransactionBtn" type="submit">Save Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal-overlay" id="deleteModal" aria-hidden="true">
+            <div class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+                <div class="confirmation-content">
+                    <div class="confirmation-icon">!</div>
+                    <h2 id="deleteModalTitle">Delete transaction?</h2>
+                    <p>This action cannot be undone. The selected transaction will be permanently removed from local storage.</p>
+                    <div class="modal-actions">
+                        <button class="secondary-btn" id="cancelDeleteBtn" type="button">Cancel</button>
+                        <button class="danger-btn" id="confirmDeleteBtn" type="button">Delete Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+            <a href="#dashboard" class="mobile-nav-link active">
+                <span>⌂</span>
+                <small>Home</small>
+            </a>
+            <a href="#transactions" class="mobile-nav-link">
+                <span>⇄</span>
+                <small>Transactions</small>
+            </a>
+            <button class="mobile-add-btn" id="mobileAddBtn" type="button" aria-label="Add transaction">+</button>
+            <a href="#analytics" class="mobile-nav-link">
+                <span>◫</span>
+                <small>Analytics</small>
+            </a>
+            <a href="#settings" class="mobile-nav-link">
+                <span>⚙</span>
+                <small>Settings</small>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
