@@ -55,6 +55,8 @@ const transactionStatus = document.getElementById("transactionStatus");
 
 const savedTransactionCount = document.getElementById("savedTransactionCount");
 
+const STORAGE_KEY = "spendwise_transactions";
+
 let transactions = [];
 let editingTransactionId = null;
 let transactionToDeleteId = null;
@@ -108,6 +110,59 @@ mobileNavLinks.forEach((link) => {
         showSection(sectionId);
     });
 });
+
+function loadTransactions() {
+    try {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+
+        if (!savedData) {
+            transactions = [];
+            return;
+        }
+
+        const parsedData = JSON.parse(savedData);
+
+        if (!Array.isArray(parsedData)) {
+            transactions = [];
+            return;
+        }
+
+        transactions = parsedData;
+    } catch (error) {
+        console.error(
+            "Unable to load transactions from LocalStorage:",
+            error
+        );
+
+        transactions = [];
+
+        showToast(
+            "Saved transaction data could not be loaded."
+        );
+    }
+}
+
+function saveTransactions() {
+    try {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(transactions)
+        );
+
+        return true;
+    } catch (error) {
+        console.error(
+            "Unable to save transactions:",
+            error
+        );
+
+        showToast(
+            "Unable to save transaction data."
+        );
+
+        return false;
+    }
+}
 
 function openTransactionModal(transaction = null) {
     if (!transactionModal) {
@@ -597,28 +652,26 @@ function updateDashboard() {
         return;
     }
 
+    const incomeCount = transactions.filter(
+        (transaction) =>
+            transaction.type === "income"
+    ).length;
+
+    const expenseCount = transactions.filter(
+        (transaction) =>
+            transaction.type === "expense"
+    ).length;
+
     incomeChange.textContent =
-        `${transactions.filter(
-            (transaction) =>
-                transaction.type === "income"
-        ).length} income transaction${
-            transactions.filter(
-                (transaction) =>
-                    transaction.type === "income"
-            ).length === 1
+        `${incomeCount} income transaction${
+            incomeCount === 1
                 ? ""
                 : "s"
         }`;
 
     expenseChange.textContent =
-        `${transactions.filter(
-            (transaction) =>
-                transaction.type === "expense"
-        ).length} expense transaction${
-            transactions.filter(
-                (transaction) =>
-                    transaction.type === "expense"
-            ).length === 1
+        `${expenseCount} expense transaction${
+            expenseCount === 1
                 ? ""
                 : "s"
         }`;
@@ -650,6 +703,8 @@ function saveNewTransaction() {
 
     transactions.unshift(transaction);
 
+    saveTransactions();
+
     showToast(
         "Transaction added successfully."
     );
@@ -677,6 +732,8 @@ function updateExistingTransaction() {
         description: descriptionInput.value.trim(),
         notes: notesInput.value.trim()
     };
+
+    saveTransactions();
 
     showToast(
         "Transaction updated successfully."
@@ -731,6 +788,8 @@ function deleteTransaction() {
                 transaction.id !==
                 transactionToDeleteId
         );
+
+    saveTransactions();
 
     currentPage = 1;
 
@@ -983,9 +1042,7 @@ if (nextPageBtn) {
 document.addEventListener(
     "keydown",
     (event) => {
-        if (
-            event.key === "Escape"
-        ) {
+        if (event.key === "Escape") {
             if (
                 transactionModal.classList.contains(
                     "show"
@@ -1006,9 +1063,10 @@ document.addEventListener(
     }
 );
 
+loadTransactions();
 renderTransactions();
 updateDashboard();
 
 console.log(
-    "SpendWise CRUD initialized."
+    "SpendWise with LocalStorage initialized."
 );
