@@ -2023,3 +2023,47 @@ body.modal-open {
     opacity: 0;
     transform: translateY(10px);
 }
+
+
+.category-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 145px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fafbff;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+/* Matching chart color badge */
+.category-legend-item::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+}
+
+/* Shopping — blue */
+.category-legend-item:nth-child(1)::before {
+    background: #36A2EB;
+}
+
+/* Food — pink */
+.category-legend-item:nth-child(2)::before {
+    background: #FF6384;
+}
+
+/* Transport — orange */
+.category-legend-item:nth-child(3)::before {
+    background: #FF9F40;
+}
+
+.category-legend-item strong {
+    margin-left: auto;
+    color: var(--text);
+    font-size: 10px;
+}

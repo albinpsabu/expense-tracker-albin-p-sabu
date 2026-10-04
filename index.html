@@ -343,81 +343,6 @@
                 </article>
             </section>
 
-            <!-- Analytics -->
-            <section id="analytics" class="page-section">
-                <div class="page-heading compact-heading">
-                    <div>
-                        <span class="eyebrow">ANALYTICS</span>
-                        <h1>Spending Analytics</h1>
-                        <p>Understand your financial patterns through simple visual analysis.</p>
-                    </div>
-                </div>
-
-                <div class="analytics-summary-grid">
-                    <article class="panel analytics-stat">
-                        <span>Monthly Income</span>
-                        <strong id="analyticsIncome">₹0.00</strong>
-                    </article>
-                    <article class="panel analytics-stat">
-                        <span>Monthly Expenses</span>
-                        <strong id="analyticsExpenses">₹0.00</strong>
-                    </article>
-                    <article class="panel analytics-stat">
-                        <span>Average Expense</span>
-                        <strong id="analyticsAverage">₹0.00</strong>
-                    </article>
-                    <article class="panel analytics-stat">
-                        <span>Largest Expense</span>
-                        <strong id="analyticsLargest">₹0.00</strong>
-                    </article>
-                </div>
-
-                <div class="analytics-grid">
-                    <article class="panel large-chart-panel">
-                        <div class="panel-header">
-                            <div>
-                                <span class="eyebrow">MONTHLY PERFORMANCE</span>
-                                <h2>Income vs Expenses</h2>
-                            </div>
-                        </div>
-                        <div class="large-chart-container">
-                            <canvas id="incomeExpenseChart" aria-label="Income versus expenses chart"></canvas>
-                            <div class="chart-empty" id="incomeExpenseEmpty">
-                                <span>▥</span>
-                                <strong>No analytics yet</strong>
-                                <p>Add transactions to generate your financial analysis.</p>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="panel monthly-panel">
-                        <div class="panel-header">
-                            <div>
-                                <span class="eyebrow">MONTHLY SUMMARY</span>
-                                <h2>Expense summary</h2>
-                            </div>
-                        </div>
-                        <div class="monthly-summary" id="monthlySummary">
-                            <div class="summary-row">
-                                <span>Food</span>
-                                <strong>₹0.00</strong>
-                            </div>
-                            <div class="summary-row">
-                                <span>Transport</span>
-                                <strong>₹0.00</strong>
-                            </div>
-                            <div class="summary-row">
-                                <span>Shopping</span>
-                                <strong>₹0.00</strong>
-                            </div>
-                            <div class="summary-row">
-                                <span>Other</span>
-                                <strong>₹0.00</strong>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </section>
 
             <!-- Insights -->
             <section id="insights" class="page-section">
@@ -472,6 +397,217 @@
                         <p id="recommendationText">Once you add transactions, SpendWise will analyze your spending patterns and provide a simple recommendation.</p>
                     </div>
                 </article>
+            </section>
+            <!-- Analytics -->
+
+            <section id="analytics" class="page-section">
+
+                <div class="page-heading compact-heading">
+
+                    <div>
+
+                        <span class="eyebrow">
+                            ANALYTICS
+                        </span>
+
+                        <h1>
+                            Spending Analytics
+                        </h1>
+
+                        <p>
+                            Understand your financial patterns through simple visual analysis.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-summary-grid">
+
+                    <article class="panel analytics-stat">
+
+                        <span>
+                            Monthly Income
+                        </span>
+
+                        <strong id="analyticsIncome">
+                            ₹0.00
+                        </strong>
+
+                    </article>
+
+
+                    <article class="panel analytics-stat">
+
+                        <span>
+                            Monthly Expenses
+                        </span>
+
+                        <strong id="analyticsExpenses">
+                            ₹0.00
+                        </strong>
+
+                    </article>
+
+
+                    <article class="panel analytics-stat">
+
+                        <span>
+                            Average Expense
+                        </span>
+
+                        <strong id="analyticsAverage">
+                            ₹0.00
+                        </strong>
+
+                    </article>
+
+
+                    <article class="panel analytics-stat">
+
+                        <span>
+                            Largest Expense
+                        </span>
+
+                        <strong id="analyticsLargest">
+                            ₹0.00
+                        </strong>
+
+                    </article>
+
+                </div>
+
+
+                <div class="analytics-grid">
+
+                    <article class="panel large-chart-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <span class="eyebrow">
+                                    MONTHLY PERFORMANCE
+                                </span>
+
+                                <h2>
+                                    Income vs Expenses
+                                </h2>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="large-chart-container">
+
+                            <canvas
+                                id="incomeExpenseChart"
+                                aria-label="Income versus expenses chart">
+                            </canvas>
+
+                            <div
+                                class="chart-empty"
+                                id="incomeExpenseEmpty">
+
+                                <span>
+                                    ▥
+                                </span>
+
+                                <strong>
+                                    No analytics yet
+                                </strong>
+
+                                <p>
+                                    Add transactions to generate your financial analysis.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="panel monthly-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <span class="eyebrow">
+                                    MONTHLY SUMMARY
+                                </span>
+
+                                <h2>
+                                    Expense summary
+                                </h2>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="monthly-summary" id="monthlySummary">
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Food
+                                </span>
+
+                                <strong>
+                                    ₹0.00
+                                </strong>
+
+                            </div>
+
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Transport
+                                </span>
+
+                                <strong>
+                                    ₹0.00
+                                </strong>
+
+                            </div>
+
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Shopping
+                                </span>
+
+                                <strong>
+                                    ₹0.00
+                                </strong>
+
+                            </div>
+
+
+                            <div class="summary-row">
+
+                                <span>
+                                    Other
+                                </span>
+
+                                <strong>
+                                    ₹0.00
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
             </section>
 
             <!-- Settings -->
@@ -695,6 +831,7 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
