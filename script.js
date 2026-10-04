@@ -7,6 +7,11 @@ const navLinks =
 const mobileNavLinks =
     document.querySelectorAll(".mobile-nav-link");
 
+const mobileMenuBtn =
+    document.getElementById("mobileMenuBtn");
+
+const sidebar =
+    document.getElementById("sidebar");
 
 const transactionModal =
     document.getElementById("transactionModal");
@@ -198,8 +203,92 @@ function showSection(sectionId) {
         behavior: "smooth"
     });
 }
+/* =========================
+   MOBILE MENU
+========================= */
+
+if (mobileMenuBtn && sidebar) {
+
+    mobileMenuBtn.addEventListener(
+        "click",
+        (event) => {
+
+            event.stopPropagation();
+
+            const isOpen =
+                sidebar.classList.toggle("open");
+
+            mobileMenuBtn.setAttribute(
+                "aria-label",
+                isOpen
+                    ? "Close menu"
+                    : "Open menu"
+            );
+
+        }
+    );
 
 
+    /* Close when clicking outside the sidebar */
+
+    document.addEventListener(
+        "click",
+        (event) => {
+
+            /* Only apply this behavior on mobile/tablet */
+
+            if (window.innerWidth > 900) {
+                return;
+            }
+
+
+            const clickedInsideSidebar =
+                sidebar.contains(event.target);
+
+            const clickedMenuButton =
+                mobileMenuBtn.contains(event.target);
+
+
+            if (
+                !clickedInsideSidebar &&
+                !clickedMenuButton &&
+                sidebar.classList.contains("open")
+            ) {
+
+                sidebar.classList.remove("open");
+
+                mobileMenuBtn.setAttribute(
+                    "aria-label",
+                    "Open menu"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* Close menu after selecting a navigation item */
+
+    mobileNavLinks.forEach((link) => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.remove("open");
+
+                mobileMenuBtn.setAttribute(
+                    "aria-label",
+                    "Open menu"
+                );
+
+            }
+        );
+
+    });
+
+}
 navLinks.forEach((link) => {
     link.addEventListener(
         "click",
@@ -2715,6 +2804,291 @@ function updateInsights() {
 }
 
 
+/* =========================
+   SETTINGS
+========================= */
+
+const settingsExportBtn =
+    document.getElementById("settingsExportBtn");
+
+const importDataBtn =
+    document.getElementById("importDataBtn");
+
+const importFileInput =
+    document.getElementById("importFileInput");
+
+const darkModeSwitch =
+    document.getElementById("darkModeSwitch");
+
+const clearAllDataBtn =
+    document.getElementById("clearAllDataBtn");
+
+
+/* =========================
+   EXPORT DATA
+========================= */
+
+function exportTransactions() {
+
+    const data = JSON.stringify(
+        transactions,
+        null,
+        2
+    );
+
+    const blob = new Blob(
+        [data],
+        {
+            type: "application/json"
+        }
+    );
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const link =
+        document.createElement("a");
+
+    link.href = url;
+
+    link.download =
+        "spendwise-transactions.json";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    showToast(
+        "Transaction data exported successfully.",
+        "success"
+    );
+}
+
+
+/* =========================
+   IMPORT DATA
+========================= */
+
+function importTransactions(file) {
+
+    if (!file) {
+        return;
+    }
+
+    const reader =
+        new FileReader();
+
+    reader.onload = function(event) {
+
+        try {
+
+            const importedData =
+                JSON.parse(
+                    event.target.result
+                );
+
+            if (
+                !Array.isArray(
+                    importedData
+                )
+            ) {
+
+                throw new Error(
+                    "Invalid data format."
+                );
+            }
+
+            transactions =
+                importedData;
+
+            saveTransactions();
+
+            currentPage = 1;
+
+            updateCategoryFilter();
+
+            renderTransactions();
+
+            updateDashboard();
+
+            updateAnalytics();
+
+            showToast(
+                "Transaction data imported successfully.",
+                "success"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Import failed:",
+                error
+            );
+
+            showToast(
+                "Invalid transaction file.",
+                "error"
+            );
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+
+/* =========================
+   EXPORT BUTTON
+========================= */
+
+if (settingsExportBtn) {
+
+    settingsExportBtn.addEventListener(
+        "click",
+        exportTransactions
+    );
+
+}
+
+
+/* =========================
+   IMPORT BUTTON
+========================= */
+
+if (importDataBtn) {
+
+    importDataBtn.addEventListener(
+        "click",
+        () => {
+
+            if (importFileInput) {
+                importFileInput.click();
+            }
+
+        }
+    );
+
+}
+
+
+if (importFileInput) {
+
+    importFileInput.addEventListener(
+        "change",
+        () => {
+
+            const file =
+                importFileInput.files[0];
+
+            importTransactions(file);
+
+            importFileInput.value = "";
+
+        }
+    );
+
+}
+
+
+/* =========================
+   DARK MODE
+========================= */
+
+function setDarkMode(enabled) {
+
+    document.body.classList.toggle(
+        "dark-mode",
+        enabled
+    );
+
+    localStorage.setItem(
+        "spendwise_dark_mode",
+        enabled
+            ? "true"
+            : "false"
+    );
+}
+
+
+if (darkModeSwitch) {
+
+    const savedTheme =
+        localStorage.getItem(
+            "spendwise_dark_mode"
+        );
+
+    const darkModeEnabled =
+        savedTheme === null
+        ? true
+        : savedTheme === "true";
+
+    darkModeSwitch.checked =
+        darkModeEnabled;
+
+    setDarkMode(
+        darkModeEnabled
+    );
+
+
+    darkModeSwitch.addEventListener(
+        "change",
+        () => {
+
+            setDarkMode(
+                darkModeSwitch.checked
+            );
+
+        }
+    );
+}
+
+
+/* =========================
+   CLEAR ALL DATA
+========================= */
+
+if (clearAllDataBtn) {
+
+    clearAllDataBtn.addEventListener(
+        "click",
+        () => {
+
+            const confirmed =
+                window.confirm(
+                    "Are you sure you want to delete all transactions? This action cannot be undone."
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            transactions = [];
+
+            saveTransactions();
+
+            currentPage = 1;
+
+            updateCategoryFilter();
+
+            renderTransactions();
+
+            updateDashboard();
+
+            updateAnalytics();
+
+            showToast(
+                "All transactions have been cleared.",
+                "success"
+            );
+
+        }
+    );
+}
+
+
 
 /* =========================
    FILTER EVENTS
@@ -3499,4 +3873,46 @@ function drawIncomeExpenseChart(
                 }
             }
         );
+}
+
+
+
+/* =========================
+   DARK MODE
+========================= */
+
+const themeToggle =
+    document.getElementById("themeToggle");
+
+// Dark mode is enabled by default
+document.body.classList.add("dark-mode");
+
+if (themeToggle) {
+
+    themeToggle.textContent = "☀";
+
+    themeToggle.addEventListener(
+        "click",
+        () => {
+
+            document.body.classList.toggle(
+                "dark-mode"
+            );
+
+            const isDark =
+                document.body.classList.contains(
+                    "dark-mode"
+                );
+
+            themeToggle.textContent =
+                isDark ? "☀" : "☾";
+
+            themeToggle.setAttribute(
+                "aria-label",
+                isDark
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+            );
+        }
+    );
 }
